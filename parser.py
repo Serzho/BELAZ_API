@@ -49,30 +49,31 @@ class LineupParser:
         for row in rows:
             # print(row.prettify())
             field = row.find("p", class_="grid__gray").string
-            all_values = row.find("div", class_="grid__cell width-75").find_all("p")
-            value = ""
-            for el in all_values:
-                try:
-                    # print(el, el.string)
-                    if el["class"] == "grid__rus":
-                        value = el.string
-                        break
-                except KeyError:
-                    if not (el.string is None):
-                        value = el.string
-                        break
+            if field not in ["Изображение ", "Подвеска", "Ведущий мост", "Габаритные характеристики, мм"]:
+                all_values = row.find("div", class_="grid__cell width-75").find_all("p")
+                value = ""
+                for el in all_values:
+                    try:
+                        if el["class"] == ['grid__rus']:
+                            value = el.string
+                            break
+                    except KeyError:
+                        if not (el.string is None):
+                            value = el.string
+                            break
 
-            if field == "Применение":
-                field = "Название"
-                pattern = r"БЕЛАЗ-[-+]?\d+."  # Слово "Белаз-", затем любое целое число и буква
-                match = re.search(pattern, value)  # Поиск названия модели
-                value = match[0] if match else 'Not found'
+                if field == "Применение":
+                    field = "Название"
+                    pattern = r"БЕЛАЗ-[-+]?\d+."  # Слово "Белаз-", затем любое целое число и буква
+                    match = re.search(pattern, value)  # Поиск названия модели
+                    value = match[0] if match else 'Not found'
 
-            model_chars.update({
-                    field:value
-                }
-            )
-        print(model_chars)
+                model_chars.update({
+                        field:value
+                    }
+                )
+        for key, value in model_chars.items():
+            print("{0}: {1}".format(key, value))
 
 
 
