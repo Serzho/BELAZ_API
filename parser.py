@@ -4,9 +4,9 @@ from bs4 import BeautifulSoup
 
 class LineupParser:
     __column_list = [
-        "Грузоподъемность, т", "Мощность двигателя, кВт (л.с.)", "Трансмиссия", "Диапазон передач",
-        "Крутящий момент, Н*м (об/мин)", "Удельный расход топлива при номинальной мощности, г/ кВт*ч",
-        "Шины", "Максимальная скорость, км/ч", "Радиус поворота, м", "Эксплуатационная масса, кг", "Полная масса, кг"
+        "Грузоподъемность, т", "Мощность двигателя, кВт (л.с.)", "Трансмиссия", "Крутящий момент, Н*м (об/мин)",
+        "Удельный расход топлива при номинальной мощности, г/ кВт*ч", "Шины", "Максимальная скорость, км/ч",
+        "Радиус поворота, м", "Эксплуатационная масса, кг", "Полная масса, кг"
     ]
 
     def __init__(self) -> None:
@@ -35,7 +35,7 @@ class LineupParser:
             returning_links.append(f"https://belaz.by{el['href']}")
         return returning_links
 
-    def __parse_main_page(self) -> tuple[list, list]:
+    def __parse_main_page(self) -> list:
         main_page_soup = self.__get_page_soup("https://belaz.by/products/products-belaz/dumpers/")
         hydromechanical_table, electromechanical_table = main_page_soup.find_all("table", class_="catalog-table-list")
         hydromechanical_lineup = self.__get_links(
@@ -44,7 +44,9 @@ class LineupParser:
         electromechanical_lineup = self.__get_links(
             electromechanical_table.find_all("a", class_="catalog-card-item")
         )
-        return hydromechanical_lineup, electromechanical_lineup
+        # print(len(electromechanical_lineup), len(hydromechanical_lineup))
+        lineup = electromechanical_lineup + hydromechanical_lineup
+        return lineup
 
     def __get_models_features(self, model_soup: BeautifulSoup) -> list[dict]:
         models = []
@@ -57,12 +59,15 @@ class LineupParser:
                 names.append(name.string)
         else:
             names.append(model_soup.h1.string.split()[-1])
+        # print(f"Count of wrappers {len(wrappers)}")
         for wrapper in wrappers:
             rows = wrapper.find_all("div", class_="grid__row")
+            # print(f"Count of rows {len(rows)}")
             for row in rows:
                 # print(row.prettify())
                 field = row.find("p", class_="grid__gray").string
-                if field in self.__column_list:
+                # print(field)
+                if field in self.__column_list and field not in model_chars.keys():
                     all_values = row.find("div", class_="grid__cell width-75").find_all("p")
                     value = ""
                     for el in all_values:
@@ -76,26 +81,31 @@ class LineupParser:
                                 break
 
                     model_chars.update({
-                        field: value
+                        field: value.rstrip()
                     }
                     )
-                    if len(model_chars) == 11:
+                    # print(f"Count of chars {len(model_chars)}")
+                    if len(model_chars) == 10:
                         model_chars.update(
                             {"Название": f"Белаз-{names.pop(0)}"}
                         )
                         models.append(model_chars.copy())
                         model_chars.clear()
 
+        # print(f"Models of count {len(models)}")
         return models
 
     def temp(self):
-        hydromechanical_lineup, electromechanical_lineup = self.__parse_main_page()
+        lineup = self.__parse_main_page()
         series = []
 
-        for link in hydromechanical_lineup:
+        for link in lineup:
+            # print(link)
             page_soup = self.__get_page_soup(link)
             series.append(self.__get_models_features(page_soup))
+            # print(len(series))
 
+        print(series)
         for models in series:
             for el in models:
                 for key, value in el.items():
