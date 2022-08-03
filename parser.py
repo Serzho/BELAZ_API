@@ -5,6 +5,12 @@ import requests
 
 
 class LineupParser:
+    __column_list = [
+        "Применение", "Грузоподъемность, т", "Мощность двигателя, кВт (л.с.)", "Трансмиссия", "Диапазон передач",
+        "Крутящий момент, Н*м (об/мин)", "Удельный расход топлива при номинальной мощности, г/ кВт*ч",
+        "Шины", "Максимальная скорость, км/ч", "Радиус поворота, м", "Эксплуатационная масса, кг", "Полная масса, кг"
+    ]
+
     def __init__(self) -> None:
         print("Lineup parser was created!")
 
@@ -42,43 +48,49 @@ class LineupParser:
         )
         return hydromechanical_lineup, electromechanical_lineup
 
-    def __get_models_features(self, model_soup: BeautifulSoup):
-        models = model_soup.find_all("div", class_="accordion__hidden-wrapper")
-        rows = models[0].find_all("div", class_="grid__row")
+    def __get_models_features(self, model_soup: BeautifulSoup) -> list[dict]:
+        models = []
+        wrappers = model_soup.find_all("div", class_="accordion__hidden-wrapper")
         model_chars = {}
-        for row in rows:
-            # print(row.prettify())
-            field = row.find("p", class_="grid__gray").string
-            if field not in ["Изображение ", "Подвеска", "Ведущий мост", "Габаритные характеристики, мм"]:
-                all_values = row.find("div", class_="grid__cell width-75").find_all("p")
-                value = ""
-                for el in all_values:
-                    try:
-                        if el["class"] == ['grid__rus']:
-                            value = el.string
-                            break
-                    except KeyError:
-                        if not (el.string is None):
-                            value = el.string
-                            break
+        for wrapper in wrappers:
+            rows = wrapper.find_all("div", class_="grid__row")
+            for row in rows:
+                # print(row.prettify())
+                field = row.find("p", class_="grid__gray").string
+                if field in self.__column_list:
+                    all_values = row.find("div", class_="grid__cell width-75").find_all("p")
+                    value = ""
+                    for el in all_values:
+                        try:
+                            if el["class"] == ['grid__rus']:
+                                value = el.string
+                                break
+                        except KeyError:
+                            if not (el.string is None):
+                                value = el.string
+                                break
 
-                if field == "Применение":
-                    field = "Название"
-                    pattern = r"БЕЛАЗ-[-+]?\d+."  # Слово "Белаз-", затем любое целое число и буква
-                    match = re.search(pattern, value)  # Поиск названия модели
-                    value = match[0] if match else 'Not found'
+                    if field == "Применение":
+                        field = "Название"
+                        pattern = r"БЕЛАЗ-[-+]?\d+."  # Слово "Белаз-", затем любое целое число и буква
+                        match = re.search(pattern, value)  # Поиск названия модели
+                        value = match[0] if match else 'Not found'
 
-                model_chars.update({
-                        field:value
+                    model_chars.update({
+                        field: value
                     }
-                )
-        for key, value in model_chars.items():
-            print("{0}: {1}".format(key, value))
-
-
+                    )
+                    if len(model_chars) == 12:
+                        models.append(model_chars.copy())
+                        model_chars.clear()
+        return models
 
     def temp(self):
         hydromechanical_lineup, electromechanical_lineup = self.__parse_main_page()
         link = hydromechanical_lineup[0]
         page_soup = self.__get_page_soup(link)
-        self.__get_models_features(page_soup)
+        models = self.__get_models_features(page_soup)
+        for el in models:
+            for key, value in el.items():
+                print(f"{key}: {value}")
+            print()
