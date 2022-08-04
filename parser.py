@@ -105,9 +105,9 @@ class LineupParser:
             series.append(self.__get_models_features(page_soup))
             # print(len(series))
 
-        print(series)
-        for models in series:
+        # print(series)
+        """for models in series:
             for el in models:
                 for key, value in el.items():
                     print(f"{key}: {value}")
-                print()
+                print()"""
