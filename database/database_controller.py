@@ -9,3 +9,4 @@ class DatabaseController:
 
     def __init__(self):
         self.session, __db_exists = load_session()
+

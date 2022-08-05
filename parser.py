@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-
+from urllib3.exceptions import InsecureRequestWarning
+import warnings
 
 class LineupParser:
     __column_list = [
@@ -11,6 +12,7 @@ class LineupParser:
 
     def __init__(self) -> None:
         print("Lineup parser was created!")
+        warnings.simplefilter('ignore', InsecureRequestWarning)
 
     def __get_page_soup(self, url: str) -> BeautifulSoup:
         headers = {
@@ -22,9 +24,15 @@ class LineupParser:
                       '07333c874ef0fa4f0c8e34387efd5464a1e9500e2277b0'
                       '367d71a273e5b46fa0869a; NSC_WBS-QUBG-jo-nptsv-WT-443'
                       '=ffffffff0951e23245525d5f4f58455e445a4a423660; '
-                      'rheftjdd=rheftjddVal; _ym_uid=1552395093355938562; _ym_d=1552395093; _ym_isad=2'
+                      'rheftjdd=rheftjddVal; _ym_uid=1552395093355938562; _ym_d=1552395093; _ym_isad=2',
+            'Connection': 'close'
         }
-        response = requests.get(url=url, headers=headers)
+        response = None
+
+        try:
+            response = requests.get(url=url, headers=headers, verify=False)
+        except InsecureRequestWarning:
+            pass
         # print(url)
         # print(len(response.text))
         return BeautifulSoup(response.text, "lxml")
@@ -48,17 +56,18 @@ class LineupParser:
         lineup = electromechanical_lineup + hydromechanical_lineup
         return lineup
 
-    def __get_models_features(self, model_soup: BeautifulSoup) -> list[dict]:
+    def __get_models_features(self, model_soup: BeautifulSoup) -> dict:
         models = []
         wrappers = model_soup.find_all("div", class_="accordion__hidden-wrapper")
         model_chars = {}
         names = []
         tabs_wrapper = model_soup.find("div", class_="tabs-wrapper")
+        series_title = model_soup.h1.string.split()[-1]
         if tabs_wrapper is not None:
             for name in tabs_wrapper.find_all("div", class_="tabs__item"):
                 names.append(name.string)
         else:
-            names.append(model_soup.h1.string.split()[-1])
+            names.append(series_title)
         # print(f"Count of wrappers {len(wrappers)}")
         for wrapper in wrappers:
             rows = wrapper.find_all("div", class_="grid__row")
@@ -93,21 +102,24 @@ class LineupParser:
                         model_chars.clear()
 
         # print(f"Models of count {len(models)}")
-        return models
+        return {series_title: models}
 
-    def temp(self):
+    def __print_models(self, series):
+        for series_title, models in series.items():
+            print(f"MODELS {series_title} SERIES")
+            for el in models:
+                for key, value in el.items():
+                    print(f"{key}: {value}")
+            print()
+
+    def parse(self):
         lineup = self.__parse_main_page()
-        series = []
+        series = {}
 
         for link in lineup:
             # print(link)
             page_soup = self.__get_page_soup(link)
-            series.append(self.__get_models_features(page_soup))
+            series.update(self.__get_models_features(page_soup))
             # print(len(series))
 
-        # print(series)
-        """for models in series:
-            for el in models:
-                for key, value in el.items():
-                    print(f"{key}: {value}")
-                print()"""
+        self.__print_models(series)
