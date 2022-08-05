@@ -2,16 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
 import warnings
+from database.database_controller import DatabaseController
 
 class LineupParser:
     __column_list = [
         "Грузоподъемность, т", "Мощность двигателя, кВт (л.с.)", "Трансмиссия", "Крутящий момент, Н*м (об/мин)",
         "Удельный расход топлива при номинальной мощности, г/ кВт*ч", "Шины", "Максимальная скорость, км/ч",
-        "Радиус поворота, м", "Эксплуатационная масса, кг", "Полная масса, кг"
+        "Радиус поворота, м", "Полная масса, кг"
     ]
+    __db_controller = None
 
-    def __init__(self) -> None:
+    def __init__(self, db_controller: DatabaseController) -> None:
         print("Lineup parser was created!")
+        self.__db_controller = db_controller
         warnings.simplefilter('ignore', InsecureRequestWarning)
 
     def __get_page_soup(self, url: str) -> BeautifulSoup:
@@ -24,15 +27,12 @@ class LineupParser:
                       '07333c874ef0fa4f0c8e34387efd5464a1e9500e2277b0'
                       '367d71a273e5b46fa0869a; NSC_WBS-QUBG-jo-nptsv-WT-443'
                       '=ffffffff0951e23245525d5f4f58455e445a4a423660; '
-                      'rheftjdd=rheftjddVal; _ym_uid=1552395093355938562; _ym_d=1552395093; _ym_isad=2',
-            'Connection': 'close'
+                      'rheftjdd=rheftjddVal; _ym_uid=1552395093355938562; _ym_d=1552395093; _ym_isad=2'
         }
         response = None
 
-        try:
-            response = requests.get(url=url, headers=headers, verify=False)
-        except InsecureRequestWarning:
-            pass
+        response = requests.get(url=url, headers=headers, verify=False)
+
         # print(url)
         # print(len(response.text))
         return BeautifulSoup(response.text, "lxml")
@@ -57,6 +57,7 @@ class LineupParser:
         return lineup
 
     def __get_models_features(self, model_soup: BeautifulSoup) -> dict:
+        # print(model_soup.prettify())
         models = []
         wrappers = model_soup.find_all("div", class_="accordion__hidden-wrapper")
         model_chars = {}
@@ -94,13 +95,13 @@ class LineupParser:
                     }
                     )
                     # print(f"Count of chars {len(model_chars)}")
-                    if len(model_chars) == 10:
+                    if len(model_chars) == 9:
                         model_chars.update(
                             {"Название": f"Белаз-{names.pop(0)}"}
                         )
                         models.append(model_chars.copy())
                         model_chars.clear()
-
+        # print(models)
         # print(f"Models of count {len(models)}")
         return {series_title: models}
 
@@ -110,6 +111,7 @@ class LineupParser:
             for el in models:
                 for key, value in el.items():
                     print(f"{key}: {value}")
+                print()
             print()
 
     def parse(self):
@@ -123,3 +125,4 @@ class LineupParser:
             # print(len(series))
 
         self.__print_models(series)
+        self.__db_controller.add_lineup(series)
