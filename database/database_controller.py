@@ -20,7 +20,6 @@ class DatabaseController:
         except Exception as e:
             print(e)
 
-
     def add_series(self, name_series: str) -> None:
         query = self.__session.query(Series.name_series).filter(Series.name_series == name_series).count()
         if query:
@@ -45,17 +44,17 @@ class DatabaseController:
 
         model = Model(
             title=model_dict.get("title"),
-            load_capacity = model_dict.get("load_capacity"),
-            engine_power = model_dict.get("engine_power"),
-            transmission = model_dict.get("transmission"),
-            torque = model_dict.get("torque"),
-            fuel_consumption = model_dict.get("fuel_consumption"),
-            tires = model_dict.get("tires"),
-            max_speed = model_dict.get("max_speed"),
-            turning_radius = model_dict.get("turning_radius"),
-            weight = model_dict.get("weight"),
-            id_series = id_series,
-            id_author = id_author
+            load_capacity=model_dict.get("load_capacity"),
+            engine_power=model_dict.get("engine_power"),
+            transmission=model_dict.get("transmission"),
+            torque=model_dict.get("torque"),
+            fuel_consumption=model_dict.get("fuel_consumption"),
+            tires=model_dict.get("tires"),
+            max_speed=model_dict.get("max_speed"),
+            turning_radius=model_dict.get("turning_radius"),
+            weight=model_dict.get("weight"),
+            id_series=id_series,
+            id_author=id_author
         )
 
         try:
@@ -64,21 +63,35 @@ class DatabaseController:
         except Exception as e:
             print(e)
 
+    def __handle_string(self, string: str):
+        # print(string)
+        out_string = string.replace(u"\xa0", u"")
+        out_string = out_string.replace(",", ".")
+        out_string = out_string.replace(" ", "")
+        chars = ["(", ")", "/", "-", "—", ";"]
+        for ch in chars:
+            if out_string.count(ch) > 0:
+                out_string = out_string.replace(ch, " ")
+
+        out_string = out_string.split()[-1]
+        return out_string
+
     def __handle_model_dict(self, input_dict: dict) -> dict:
         output_dict = {}
         try:
             output_dict.update(
                 {
                     "title": input_dict.get("Название"),
-                    "load_capacity": int(input_dict.get("Грузоподъемность, т").split("-")[-1]),
-                    "engine_power": int(input_dict.get("Мощность двигателя, кВт (л.с.)").split(";")[-1].split("(")[1][:-1]),
+                    "load_capacity": int(self.__handle_string(input_dict.get("Грузоподъемность, т"))),
+                    "engine_power": int(self.__handle_string(input_dict.get("Мощность двигателя, кВт (л.с.)"))),
                     "transmission": input_dict.get("Трансмиссия"),
-                    "torque": int(input_dict.get("Крутящий момент, Н*м (об/мин)").split()[-1].replace("(", "").replace(")", "").replace("/", "").replace("-", "")[-1]),
-                    "fuel_consumption": input_dict.get("Удельный расход топлива при номинальной мощности, г/ кВт*ч"),
+                    "torque": int(self.__handle_string(input_dict.get("Крутящий момент, Н*м (об/мин)"))),
+                    "fuel_consumption": int(self.__handle_string(
+                        input_dict.get("Удельный расход топлива при номинальной мощности, г/ кВт*ч"))),
                     "tires": input_dict.get("Шины"),
                     "max_speed": int(input_dict.get("Максимальная скорость, км/ч")),
-                    "turning_radius": float(input_dict.get("Радиус поворота, м").replace(",", ".")),
-                    "weight": int(input_dict.get("Полная масса, кг").replace(" ", "").split("-")[-1].split("—")[-1].replace(u"\xa0", u""))
+                    "turning_radius": float(self.__handle_string(input_dict.get("Радиус поворота, м"))),
+                    "weight": int(self.__handle_string(input_dict.get("Полная масса, кг")))
                 }
             )
         except ValueError as ve:
@@ -93,5 +106,3 @@ class DatabaseController:
             for model in models:
                 model_dict = self.__handle_model_dict(model)
                 self.add_model(model_dict, name_series, "PARSER")
-
-
