@@ -114,7 +114,10 @@ class LineupParser:
                 print()
             print()
 
-    def parse(self):
+    def parse(self, remake: bool):
+        if remake:
+            self.__db_controller.erase_lineup()
+
         lineup = self.__parse_main_page()
         series = {}
 

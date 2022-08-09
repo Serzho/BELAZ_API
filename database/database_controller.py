@@ -11,6 +11,7 @@ class DatabaseController:
         self.__session, db_exists = load_session()
         if not db_exists:
             self.add_author("PARSER")
+            self.add_author("USER")
 
     def add_author(self, name_author: str) -> None:
         author = Author(name_author)
@@ -33,7 +34,7 @@ class DatabaseController:
             except Exception as e:
                 print(e)
 
-    def add_model(self, model_dict: dict, name_series: str, name_author: str) -> None:
+    def add_model(self, model_dict: dict, name_series: str, name_author: str) -> str:
         id_author = self.__session.query(Author).filter(
             Author.name_author == name_author
         ).first().id_author
@@ -60,10 +61,12 @@ class DatabaseController:
         try:
             self.__session.add(model)
             self.__session.commit()
+            return "Successfully adding"
         except Exception as e:
             print(e)
+            return "Unsuccessfully deleting"
 
-    def __handle_string(self, string: str):
+    def __handle_string(self, string: str) -> str:
         # print(string)
         out_string = string.replace(u"\xa0", u"")
         out_string = out_string.replace(",", ".")
@@ -106,3 +109,75 @@ class DatabaseController:
             for model in models:
                 model_dict = self.__handle_model_dict(model)
                 self.add_model(model_dict, name_series, "PARSER")
+
+    def get_all_items(self) -> dict:
+        lineup_dict = {}
+        lineup = self.__session.query(Model).all()
+        for model in lineup:
+            model_dict = model.get_dict()
+            series_name = self.__session.query(
+                Series.id_series, Series.name_series
+            ).filter(
+                Series.id_series == model_dict.pop("id_series")
+            )
+            author_name = self.__session.query(
+                Author.id_author, Author.name_author
+            ).filter(
+                Author.id_author == model_dict.pop("id_series")
+            )
+            model_dict.update({
+                "series": series_name,
+                "author": author_name
+            })
+            lineup_dict.update(model_dict)
+        return lineup_dict
+
+
+    def get_model(self, id: int, title: str) -> Model:
+        model = None
+
+        if id is not None:
+            model = self.__session.query(Model).filter(Model.id == id).first()
+        elif title is not None:
+            model = self.__session.query(Model).filter(Model.title == title).first()
+
+        return model
+
+    def delete_model(self, id: int, title: str) -> str:
+        model = self.get_model(id, title)
+        if model is not None:
+            try:
+                self.__session.delete(model)
+                self.__session.commit()
+                return "Successful deleting"
+            except Exception as e:
+                print(e)
+                return "Unsuccessful deleting"
+        else:
+            return "Model is not found"
+
+    def erase_lineup(self):
+        query = self.__session.query(Series.id_series).all()
+        for series in query:
+            self.delete_series(id_series = series.id_series, name_series=None)
+
+    def delete_series(self, id_series, name_series):
+        if name_series is not None:
+            id_series = self.__session.query(
+                Series.id, Series.name_series
+            ).filter(Series.name_series == name_series).first()
+
+        query = self.__session.query(Model).filter(Model.id_series == id_series).all()
+        for model in query:
+            try:
+                self.__session.delete(model)
+                self.__session.commit()
+            except Exception as e:
+                print(e)
+
+        try:
+            series = self.__session.query(Series).filter(Series.id_series == id_series).first()
+            self.__session.delete(series)
+            self.__session.commit()
+        except Exception as e:
+            print(e)

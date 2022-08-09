@@ -35,3 +35,18 @@ class Model(Base):
         self.id_series = id_series
         self.id_author = id_author
 
+    def get_dict(self) -> dict:
+        return {
+            "title": self.title,
+            "load_capacity": self.load_capacity,
+            "engine_power": self.engine_power,
+            "transmission": self.transmission,
+            "torque": self.torque,
+            "fuel_consumption": self.fuel_consumption,
+            "tires": self.tires,
+            "max_speed": self.max_speed,
+            "turning_radius": self.turning_radius,
+            "weight": self.weight,
+            "id_series": self.id_series,
+            "id_author": self.id_author
+        }
