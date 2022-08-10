@@ -23,5 +23,6 @@ class Add_request(BaseModel):
 class Parse_request(BaseModel):
     remake: bool
 
+
 class Delete_series_request(BaseModel):
-    name_series: bool
+    name_series: str

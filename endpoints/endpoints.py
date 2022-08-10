@@ -66,7 +66,7 @@ async def parse_database(parse_info: Parse_request) -> JSONResponse:
 
 
 @app.get("/get_item")
-async def get_item(item_info: Item_reqeust) -> JSONResponse:
+async def get_item(item_info: Item_reqeust) -> JSONResponse:  # TODO: исправить баг
     model = dbController.get_model(
         id=item_info.id, title=item_info.title
     )

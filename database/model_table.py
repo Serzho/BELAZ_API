@@ -37,6 +37,7 @@ class Model(Base):
 
     def get_dict(self) -> dict:
         return {
+            "id": self.id,
             "title": self.title,
             "load_capacity": self.load_capacity,
             "engine_power": self.engine_power,

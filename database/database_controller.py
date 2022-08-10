@@ -35,38 +35,41 @@ class DatabaseController:
                 print(e)
 
     def add_model(self, model_dict: dict, name_series: str, name_author: str) -> str:
-        id_author = self.__session.query(Author).filter(
-            Author.name_author == name_author
-        ).first().id_author
+        if not self.__session.query(Model.title).filter(Model.title == model_dict.get("title")).count():
+            id_author = self.__session.query(Author).filter(
+                Author.name_author == name_author
+            ).first().id_author
 
-        self.add_series(name_series)
+            self.add_series(name_series)
 
-        id_series = self.__session.query(Series).filter(
-            Series.name_series == name_series
-        ).first().id_series
+            id_series = self.__session.query(Series).filter(
+                Series.name_series == name_series
+            ).first().id_series
 
-        model = Model(
-            title=model_dict.get("title"),
-            load_capacity=model_dict.get("load_capacity"),
-            engine_power=model_dict.get("engine_power"),
-            transmission=model_dict.get("transmission"),
-            torque=model_dict.get("torque"),
-            fuel_consumption=model_dict.get("fuel_consumption"),
-            tires=model_dict.get("tires"),
-            max_speed=model_dict.get("max_speed"),
-            turning_radius=model_dict.get("turning_radius"),
-            weight=model_dict.get("weight"),
-            id_series=id_series,
-            id_author=id_author
-        )
+            model = Model(
+                title=model_dict.get("title"),
+                load_capacity=model_dict.get("load_capacity"),
+                engine_power=model_dict.get("engine_power"),
+                transmission=model_dict.get("transmission"),
+                torque=model_dict.get("torque"),
+                fuel_consumption=model_dict.get("fuel_consumption"),
+                tires=model_dict.get("tires"),
+                max_speed=model_dict.get("max_speed"),
+                turning_radius=model_dict.get("turning_radius"),
+                weight=model_dict.get("weight"),
+                id_series=id_series,
+                id_author=id_author
+            )
 
-        try:
-            self.__session.add(model)
-            self.__session.commit()
-            return "Successfully adding"
-        except Exception as e:
-            print(e)
-            return "Unsuccessfully deleting"
+            try:
+                self.__session.add(model)
+                self.__session.commit()
+                return "Successfully adding"
+            except Exception as e:
+                print(e)
+                return "Unsuccessfully deleting"
+        else:
+            return "Model already exists"
 
     def __handle_string(self, string: str) -> str:
         # print(string)
@@ -166,9 +169,9 @@ class DatabaseController:
     def delete_series(self, id_series, name_series):
         if name_series is not None:
             id_series = self.__session.query(
-                Series.id, Series.name_series
-            ).filter(Series.name_series == name_series).first()
-
+                Series.id_series, Series.name_series
+            ).filter(Series.name_series == name_series).first().id_series
+        # print(id_series)
         query = self.__session.query(Model).filter(Model.id_series == id_series).all()
         for model in query:
             try:
