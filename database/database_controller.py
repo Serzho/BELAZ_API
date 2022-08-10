@@ -1,4 +1,4 @@
-from service import load_session
+from core.service import load_session
 from database.model_table import Model
 from database.series_table import Series
 from database.author_table import Author
@@ -38,6 +38,8 @@ class DatabaseController:
         id_author = self.__session.query(Author).filter(
             Author.name_author == name_author
         ).first().id_author
+
+        self.add_series(name_series)
 
         id_series = self.__session.query(Series).filter(
             Series.name_series == name_series
@@ -110,8 +112,8 @@ class DatabaseController:
                 model_dict = self.__handle_model_dict(model)
                 self.add_model(model_dict, name_series, "PARSER")
 
-    def get_all_items(self) -> dict:
-        lineup_dict = {}
+    def get_all_items(self) -> list[dict]:
+        lineup_dict = []
         lineup = self.__session.query(Model).all()
         for model in lineup:
             model_dict = model.get_dict()
@@ -119,17 +121,17 @@ class DatabaseController:
                 Series.id_series, Series.name_series
             ).filter(
                 Series.id_series == model_dict.pop("id_series")
-            )
+            ).first().name_series
             author_name = self.__session.query(
                 Author.id_author, Author.name_author
             ).filter(
-                Author.id_author == model_dict.pop("id_series")
-            )
+                Author.id_author == model_dict.pop("id_author")
+            ).first().name_author
             model_dict.update({
                 "series": series_name,
                 "author": author_name
             })
-            lineup_dict.update(model_dict)
+            lineup_dict.append(model_dict)
         return lineup_dict
 
 

@@ -1,6 +1,6 @@
 import sqlalchemy
 
-from service import Base
+from core.service import Base
 
 
 class Series(Base):

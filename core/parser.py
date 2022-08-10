@@ -13,7 +13,7 @@ class LineupParser:
     __db_controller = None
 
     def __init__(self, db_controller: DatabaseController) -> None:
-        print("Lineup parser was created!")
+        print("Lineup core was created!")
         self.__db_controller = db_controller
         warnings.simplefilter('ignore', InsecureRequestWarning)
 

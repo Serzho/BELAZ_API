@@ -1,6 +1,7 @@
 from server import app, dbController, parser
 from fastapi.responses import FileResponse, JSONResponse
 from requests_models import *
+import uvicorn
 
 
 def json_resp(input_dict: dict) -> JSONResponse:
@@ -19,6 +20,7 @@ async def test() -> JSONResponse:
 
 @app.get("/get_all_items")
 async def get_all_items() -> JSONResponse:
+    # print(dbController.get_all_items())
     return json_resp(
         dbController.get_all_items()
     )
@@ -90,3 +92,6 @@ async def get_filtered_items() -> JSONResponse:
 async def delete_series(delete_series_info: Delete_series_request) -> JSONResponse:
     dbController.delete_series(id_series=None, name_series=delete_series_info.name_series)
     return json_resp({"msg": "Successfully deleting series request!"})
+
+uvicorn.run(app=app, host="localhost", port=9999)
+
