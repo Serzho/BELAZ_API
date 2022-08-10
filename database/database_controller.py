@@ -92,7 +92,7 @@ class DatabaseController:
                     "title": input_dict.get("Название"),
                     "load_capacity": int(self.__handle_string(input_dict.get("Грузоподъемность, т"))),
                     "engine_power": int(self.__handle_string(input_dict.get("Мощность двигателя, кВт (л.с.)"))),
-                    "transmission": input_dict.get("Трансмиссия"),
+                    "transmission": input_dict.get("Трансмиссия").split()[0],
                     "torque": int(self.__handle_string(input_dict.get("Крутящий момент, Н*м (об/мин)"))),
                     "fuel_consumption": int(self.__handle_string(
                         input_dict.get("Удельный расход топлива при номинальной мощности, г/ кВт*ч"))),
@@ -107,6 +107,18 @@ class DatabaseController:
             print(ve)
 
         return output_dict
+
+    def edit_model(self, changing_fields, id):
+        model = self.get_model(
+            id=id
+        )
+        model.change_by_dict(changing_fields)
+        try:
+            self.__session.commit()
+            return "Successful editing"
+        except Exception as e:
+            print(e)
+            return "Unsuccessful editing"
 
     def add_lineup(self, lineup_dict: dict) -> None:
         for name_series, models in lineup_dict.items():
@@ -138,7 +150,7 @@ class DatabaseController:
         return lineup_dict
 
 
-    def get_model(self, id: int, title: str) -> Model:
+    def get_model(self, id: int, title = None) -> Model:
         model = None
 
         if id is not None:

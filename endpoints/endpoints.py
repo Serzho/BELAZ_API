@@ -77,9 +77,9 @@ async def get_item(item_info: Item_reqeust) -> JSONResponse:  # TODO: испра
 
 
 @app.post("/edit_item")
-async def edit_item() -> JSONResponse:
-    # TODO: сделать функцию
-    pass
+async def edit_item(edit_info: Edit_request) -> JSONResponse:
+    response_msg = dbController.edit_model(edit_info.changing_fields, edit_info.id)
+    return json_resp({"msg": response_msg})
 
 
 @app.get("/filter")

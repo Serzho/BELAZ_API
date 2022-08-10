@@ -26,3 +26,8 @@ class Parse_request(BaseModel):
 
 class Delete_series_request(BaseModel):
     name_series: str
+
+
+class Edit_request(BaseModel):
+    id: int
+    changing_fields: dict

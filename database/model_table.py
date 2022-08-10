@@ -51,3 +51,23 @@ class Model(Base):
             "id_series": self.id_series,
             "id_author": self.id_author
         }
+
+    def change_by_dict(self, model_dict: dict) -> None:
+        if "title" in model_dict:
+            self.title = model_dict.get("title")
+        if "load_capacity" in model_dict:
+            self.load_capacity = model_dict.get("load_capacity")
+        if "engine_power" in model_dict:
+            self.engine_power = model_dict.get("engine_power")
+        if "transmission" in model_dict:
+            self.transmission = model_dict.get("transmission")
+        if "torque" in model_dict:
+            self.torque = model_dict.get("torque")
+        if "fuel_consumption" in model_dict:
+            self.fuel_consumption = model_dict.get("fuel_consumption")
+        if "max_speed" in model_dict:
+            self.max_speed = model_dict.get("max_speed")
+        if "turning_radius" in model_dict:
+            self.turning_radius = model_dict.get("turning_radius")
+        if "weight" in model_dict:
+            self.weight = model_dict.get("weight")
