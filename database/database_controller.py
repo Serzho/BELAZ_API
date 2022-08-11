@@ -108,6 +108,31 @@ class DatabaseController:
 
         return output_dict
 
+    def filter_models(self, fields_dict: dict):
+        full_lineup = self.get_all_items()
+        filtered_lineup = []
+        for model in full_lineup:
+            for field_name, condition in fields_dict.items():
+                operator = condition[0]
+                condition = condition[1:]
+                if operator == "=":
+                    if not(model.get(field_name) == condition):
+                        break
+                elif operator == ">":
+                    digit = float(condition)
+                    if not(model.get(field_name) > digit):
+                        break
+                elif operator == "<":
+                    digit = float(condition)
+                    if not (model.get(field_name) < digit):
+                        break
+            else:
+                filtered_lineup.append(model)
+
+        return filtered_lineup
+
+
+
     def edit_model(self, changing_fields, id):
         model = self.get_model(
             id=id

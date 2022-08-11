@@ -31,3 +31,7 @@ class Delete_series_request(BaseModel):
 class Edit_request(BaseModel):
     id: int
     changing_fields: dict
+
+
+class Filter_request(BaseModel):
+    filtered_fields: dict

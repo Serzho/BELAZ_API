@@ -82,10 +82,10 @@ async def edit_item(edit_info: Edit_request) -> JSONResponse:
     return json_resp({"msg": response_msg})
 
 
-@app.get("/filter")
-async def get_filtered_items() -> JSONResponse:
-    # TODO: сделать функцию
-    pass
+@app.post("/filter")
+async def get_filtered_items(filter_info: Filter_request) -> JSONResponse:
+    response_data = dbController.filter_models(filter_info.filtered_fields)
+    return json_resp(response_data)
 
 
 @app.delete("/delete_series")
