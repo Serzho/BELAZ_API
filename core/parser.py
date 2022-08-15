@@ -3,6 +3,11 @@ from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
 import warnings
 from database_controller import DatabaseController
+from service.service import base_logger
+
+
+def log(message: str) -> None:
+    base_logger(msg=message, module_name="PARSER")
 
 
 class LineupParser:
@@ -14,11 +19,12 @@ class LineupParser:
     __db_controller = None
 
     def __init__(self, db_controller: DatabaseController) -> None:
-        print("Lineup core was created!")
         self.__db_controller = db_controller
         warnings.simplefilter('ignore', InsecureRequestWarning)
+        log("Belaz parser was initialized!")
 
     def __get_page_soup(self, url: str) -> BeautifulSoup:
+        log(f"Getting page with url = {url}")
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/72.0.3626.121 Safari/537.36',
@@ -33,20 +39,24 @@ class LineupParser:
         response = None
 
         response = requests.get(url=url, headers=headers, verify=False)
-
+        log(f"Page returned with status code = {response.status_code}")
         # print(url)
         # print(len(response.text))
         return BeautifulSoup(response.text, "lxml")
 
     def __get_links(self, tags: list) -> list:
+        log(f"Getting {len(tags)} tags from main page")
         returning_links = []
         for el in tags:
             returning_links.append(f"https://belaz.by{el['href']}")
         return returning_links
 
     def __parse_main_page(self) -> list:
+        log("Parsing main page...")
         main_page_soup = self.__get_page_soup("https://belaz.by/products/products-belaz/dumpers/")
         hydromechanical_table, electromechanical_table = main_page_soup.find_all("table", class_="catalog-table-list")
+        log(f"{len(hydromechanical_table)} links found in hydromechanical lineup")
+        log(f"{len(electromechanical_table)} links found in electromechanical lineup")
         hydromechanical_lineup = self.__get_links(
             hydromechanical_table.find_all("a", class_="catalog-card-item")
         )
@@ -55,10 +65,12 @@ class LineupParser:
         )
         # print(len(electromechanical_lineup), len(hydromechanical_lineup))
         lineup = electromechanical_lineup + hydromechanical_lineup
+        log("Main page was parsed")
         return lineup
 
     def __get_models_features(self, model_soup: BeautifulSoup) -> dict:
         # print(model_soup.prettify())
+        log(f"Getting features of models")
         models = []
         wrappers = model_soup.find_all("div", class_="accordion__hidden-wrapper")
         model_chars = {}
@@ -104,9 +116,10 @@ class LineupParser:
                         model_chars.clear()
         # print(models)
         # print(f"Models of count {len(models)}")
+        log(f"Found {len(models)} models in series name {series_title}")
         return {series_title: models}
 
-    def __print_models(self, series):
+    def __print_models(self, series: dict) -> None:
         for series_title, models in series.items():
             print(f"MODELS {series_title} SERIES")
             for el in models:
@@ -116,6 +129,7 @@ class LineupParser:
             print()
 
     def parse(self, remake: bool):
+        log(f"Parsing belaz.by: remake = {remake}")
         if remake:
             self.__db_controller.erase_lineup()
 
@@ -128,5 +142,6 @@ class LineupParser:
             series.update(self.__get_models_features(page_soup))
             # print(len(series))
 
-        self.__print_models(series)
+        # self.__print_models(series)
         self.__db_controller.add_lineup(series)
+        log("Belaz.by was parsed!")
