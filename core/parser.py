@@ -2,7 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
 import warnings
-from database.database_controller import DatabaseController
+from database_controller import DatabaseController
+
 
 class LineupParser:
     __column_list = [

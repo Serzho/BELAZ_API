@@ -1,8 +1,8 @@
-from core.service import load_session
+from database.init_database import load_session
 from database.model_table import Model
 from database.series_table import Series
 from database.author_table import Author
-
+from sqlalchemy.exc import OperationalError
 
 class DatabaseController:
     __session = None
@@ -116,11 +116,11 @@ class DatabaseController:
                 operator = condition[0]
                 condition = condition[1:]
                 if operator == "=":
-                    if not(model.get(field_name) == condition):
+                    if not (model.get(field_name) == condition):
                         break
                 elif operator == ">":
                     digit = float(condition)
-                    if not(model.get(field_name) > digit):
+                    if not (model.get(field_name) > digit):
                         break
                 elif operator == "<":
                     digit = float(condition)
@@ -130,8 +130,6 @@ class DatabaseController:
                 filtered_lineup.append(model)
 
         return filtered_lineup
-
-
 
     def edit_model(self, changing_fields, id):
         model = self.get_model(
@@ -174,8 +172,7 @@ class DatabaseController:
             lineup_dict.append(model_dict)
         return lineup_dict
 
-
-    def get_model(self, id: int, title = None) -> Model:
+    def get_model(self, id: int, title=None) -> Model:
         model = None
 
         if id is not None:
@@ -199,9 +196,12 @@ class DatabaseController:
             return "Model is not found"
 
     def erase_lineup(self):
-        query = self.__session.query(Series.id_series).all()
-        for series in query:
-            self.delete_series(id_series = series.id_series, name_series=None)
+        try:
+            query = self.__session.query(Series.id_series).all()
+            for series in query:
+                self.delete_series(id_series=series.id_series, name_series=None)
+        except OperationalError:
+            pass
 
     def delete_series(self, id_series, name_series):
         if name_series is not None:

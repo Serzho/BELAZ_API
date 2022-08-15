@@ -1,6 +1,8 @@
 import sqlalchemy
+import sys
 
-from core.service import Base
+sys.path.append("../")
+from .init_database import Base
 
 
 class Series(Base):

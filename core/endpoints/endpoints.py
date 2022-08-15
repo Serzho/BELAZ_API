@@ -1,7 +1,13 @@
-from server import app, dbController, parser
+import sys
+
+sys.path.append("../../../BELAZ_API/")
+
+from core.server import fastAPI_app, dbController, parser
 from fastapi.responses import FileResponse, JSONResponse
 from requests_models import *
-import uvicorn
+
+
+app = fastAPI_app
 
 
 def json_resp(input_dict: dict) -> JSONResponse:
@@ -93,5 +99,5 @@ async def delete_series(delete_series_info: Delete_series_request) -> JSONRespon
     dbController.delete_series(id_series=None, name_series=delete_series_info.name_series)
     return json_resp({"msg": "Successfully deleting series request!"})
 
-uvicorn.run(app=app, host="localhost", port=9999)
+# uvicorn.run(app=app, host="localhost", port=9999)
 

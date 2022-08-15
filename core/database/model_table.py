@@ -1,6 +1,9 @@
+import sys
+
 import sqlalchemy
 
-from core.service import Base
+
+from .init_database import Base
 
 
 class Model(Base):
