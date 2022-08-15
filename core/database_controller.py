@@ -3,7 +3,7 @@ from database.model_table import Model
 from database.series_table import Series
 from database.author_table import Author
 from sqlalchemy.exc import OperationalError
-from service.service import base_logger
+from service.logger import base_logger
 
 
 def log(message: str) -> None:
@@ -115,6 +115,7 @@ class DatabaseController:
 
     def __handle_model_dict(self, input_dict: dict) -> dict:
         output_dict = {}
+        # TODO: Исправить проблему с разными единицами измерения
         try:
             output_dict.update(
                 {

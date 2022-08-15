@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
 import warnings
 from database_controller import DatabaseController
-from service.service import base_logger
+from service.logger import base_logger
 
 
 def log(message: str) -> None:

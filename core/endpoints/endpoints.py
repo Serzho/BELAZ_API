@@ -5,7 +5,7 @@ sys.path.append("../../../BELAZ_API/")
 from core.server import fastAPI_app, dbController, parser
 from fastapi.responses import FileResponse, JSONResponse
 from requests_models import *
-from core.service.service import base_logger
+from core.service.logger import base_logger
 
 app = fastAPI_app
 
@@ -82,7 +82,7 @@ async def parse_database(parse_info: Parse_request) -> JSONResponse:
 
 
 @app.get("/get_item")
-async def get_item(item_info: Item_reqeust) -> JSONResponse:
+async def get_item(item_info: Item_reqeust) -> JSONResponse:  # TODO: не работает
     log(f"Getting item request with id = {item_info.id} and name = {item_info.title}")
     model = dbController.get_model(
         id=item_info.id, title=item_info.title
@@ -107,7 +107,7 @@ async def get_filtered_items(filter_info: Filter_request) -> JSONResponse:
     return json_resp(response_data)
 
 
-@app.delete("/delete_series")
+@app.delete("/delete_series")  # TODO: Выбрасывает исключение при повторном удалении
 async def delete_series(delete_series_info: Delete_series_request) -> JSONResponse:
     log(f"Deleting series request with name = {delete_series_info.name_series}")
     dbController.delete_series(id_series=None, name_series=delete_series_info.name_series)
