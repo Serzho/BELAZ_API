@@ -115,7 +115,6 @@ class DatabaseController:
 
     def __handle_model_dict(self, input_dict: dict) -> dict:
         output_dict = {}
-        # TODO: Исправить проблему с разными единицами измерения
         try:
             output_dict.update(
                 {
@@ -210,6 +209,10 @@ class DatabaseController:
         return lineup_dict
 
     def get_model(self, id: int, title=None) -> Model:
+        if not ((type(id) is int and title is None) or
+                (id is None and type(title) is str) or
+                (type(id) is int and type(title) is str)):
+            raise TypeError
         model = None
         log(f"Getting model with id = {id} and title = {title} from database")
         if id is not None:
@@ -220,6 +223,8 @@ class DatabaseController:
 
     def delete_model(self, id: int, title: str) -> str:
         log(f"Deleting model from database with id = {id} and title = {title}")
+        if id is None and not(title is None or type(title) is str):
+            raise TypeError
         model = self.get_model(id, title)
         if model is not None:
             try:
@@ -245,12 +250,17 @@ class DatabaseController:
             pass
         log("Lineup was erased!")
 
-    def delete_series(self, id_series, name_series):
+    def delete_series(self, id_series, name_series) -> str:
         log(f"Deleting all models with series id = {id_series} and name = {name_series}")
         if name_series is not None:
-            id_series = self.__session.query(
+            series = self.__session.query(
                 Series.id_series, Series.name_series
-            ).filter(Series.name_series == name_series).first().id_series
+            ).filter(Series.name_series == name_series).first()
+            if series is not None:
+                id_series = series.id_series
+            else:
+                log("Series not found")
+                return "Series not found"
         # print(id_series)
         query = self.__session.query(Model).filter(Model.id_series == id_series).all()
         log(f"{len(query)} models to delete!")
@@ -270,6 +280,12 @@ class DatabaseController:
             self.__session.delete(series)
             self.__session.commit()
             log("Successful deleting")
+            return "Successful deleting"
         except Exception as e:
             log("Unsuccessful deleting")
             print(e)
+            return "Unsuccessful deleting"
+
+    def author_exists(self, name_author: str) -> bool:
+        return self.__session.query(Author.name_author).filter(Author.name_author == name_author).count()
+

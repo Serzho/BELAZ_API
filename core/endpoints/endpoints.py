@@ -81,8 +81,8 @@ async def parse_database(parse_info: Parse_request) -> JSONResponse:
     return json_resp({"msg": "Successfully parsing request!"})
 
 
-@app.get("/get_item")
-async def get_item(item_info: Item_reqeust) -> JSONResponse:  # TODO: не работает
+@app.post("/get_item")
+async def get_item(item_info: Item_reqeust) -> JSONResponse:
     log(f"Getting item request with id = {item_info.id} and name = {item_info.title}")
     model = dbController.get_model(
         id=item_info.id, title=item_info.title
@@ -107,11 +107,11 @@ async def get_filtered_items(filter_info: Filter_request) -> JSONResponse:
     return json_resp(response_data)
 
 
-@app.delete("/delete_series")  # TODO: Выбрасывает исключение при повторном удалении
+@app.delete("/delete_series")
 async def delete_series(delete_series_info: Delete_series_request) -> JSONResponse:
     log(f"Deleting series request with name = {delete_series_info.name_series}")
-    dbController.delete_series(id_series=None, name_series=delete_series_info.name_series)
-    return json_resp({"msg": "Successfully deleting series request!"})
+    msg = dbController.delete_series(id_series=None, name_series=delete_series_info.name_series)
+    return json_resp({"msg": msg})
 
 # uvicorn.run(app=app, host="localhost", port=9999)
 
