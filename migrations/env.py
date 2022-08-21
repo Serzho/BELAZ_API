@@ -3,20 +3,20 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from alembic import context
-from os import environ
+
 from alembic import context
 import sys
 sys.path.append("../../core")
+sys.path.append("../../")
+from cfg import DB_PATH, DB_USER
 from core.database.init_database import Base
 config = context.config
 
 section = config.config_ini_section
-config.set_section_option(section, "sqlalchemy.url", "sqlite:///belaz.db")
+config.set_section_option(section, "sqlalchemy.url", f"{DB_USER}:///{DB_PATH}")
 fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-
 
 
 def run_migrations_offline() -> None:

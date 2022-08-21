@@ -74,18 +74,18 @@ class DatabaseController:
             )
             log('MODEL DICT: \n'
                 ''
-                'title = title=model_dict.get("title") \n'
-                'load_capacity=model_dict.get("load_capacity") \n'
-                'engine_power=model_dict.get("engine_power")\n'
-                'transmission=model_dict.get("transmission")\n'
-                'torque=model_dict.get("torque")\n'
-                'fuel_consumption=model_dict.get("fuel_consumption")\n'
-                'tires=model_dict.get("tires")\n'
-                'max_speed=model_dict.get("max_speed")\n'
-                'turning_radius=model_dict.get("turning_radius")\n'
-                'weight=model_dict.get("weight")\n'
-                'id_series=id_series\n'
-                'id_author=id_author')
+                f'title ={model_dict.get("title")} \n'
+                f'load_capacity={model_dict.get("load_capacity")} \n'
+                f'engine_power={model_dict.get("engine_power")}\n'
+                f'transmission={model_dict.get("transmission")}\n'
+                f'torque={model_dict.get("torque")}\n'
+                f'fuel_consumption={model_dict.get("fuel_consumption")}\n'
+                f'tires={model_dict.get("tires")}\n'
+                f'max_speed={model_dict.get("max_speed")}\n'
+                f'turning_radius={model_dict.get("turning_radius")}\n'
+                f'weight={model_dict.get("weight")}\n'
+                f'id_series={id_series}\n'
+                f'id_author={id_author}')
             try:
                 self.__session.add(model)
                 self.__session.commit()
@@ -167,6 +167,7 @@ class DatabaseController:
         model = self.get_model(
             id=id
         )
+        changing_fields.update({"id_author": 2})
         model.change_by_dict(changing_fields)
         try:
             self.__session.commit()
@@ -182,6 +183,13 @@ class DatabaseController:
             self.add_series(name_series)
             for model in models:
                 model_dict = self.__handle_model_dict(model)
+                last_model = self.__session.query(
+                                 Model.id, Model.title, Model.id_author
+                ).filter(Model.title == model_dict.get("title"))
+                if last_model:
+                    if last_model.id_author == 1:
+                        self.delete_model(last_model.id, last_model.title)
+
                 self.add_model(model_dict, name_series, "PARSER")
 
     def get_all_items(self) -> list[dict]:
