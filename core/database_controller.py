@@ -186,7 +186,7 @@ class DatabaseController:
                 model_dict = self.__handle_model_dict(model)
                 last_model = self.__session.query(
                                  Model.id, Model.title, Model.id_author
-                ).filter(Model.title == model_dict.get("title"))
+                ).filter(Model.title == model_dict.get("title")).first()
                 if last_model:
                     if last_model.id_author == 1:
                         self.delete_model(last_model.id, last_model.title)
