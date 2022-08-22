@@ -2,8 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 from urllib3.exceptions import InsecureRequestWarning
 import warnings
-from database_controller import DatabaseController
-from service.logger import base_logger
+import sys
+sys.path.append("../")
+from core.database_controller import DatabaseController
+from .service.logger import base_logger
 from cfg import HEADERS, PARSER_TYPE, BELAZ_URL
 
 

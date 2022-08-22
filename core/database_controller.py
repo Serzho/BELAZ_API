@@ -1,9 +1,10 @@
-from database.init_database import load_session
-from database.model_table import Model
-from database.series_table import Series
-from database.author_table import Author
+
+from .database.init_database import load_session
+from .database.model_table import Model
+from .database.series_table import Series
+from .database.author_table import Author
 from sqlalchemy.exc import OperationalError
-from service.logger import base_logger
+from .service.logger import base_logger
 
 
 def log(message: str) -> None:

@@ -3,10 +3,11 @@ import sys
 import uvicorn
 
 sys.path.append("../../../BELAZ_API/")
+sys.path.append("../endpoints")
 
-from core.server import fastAPI_app, dbController, parser
+from core.server import fastAPI_app, dbController, belaz_parser
 from fastapi.responses import FileResponse, JSONResponse
-from requests_models import *
+from core.endpoints.requests_models import *
 from core.service.logger import base_logger
 
 app = fastAPI_app
@@ -79,7 +80,7 @@ async def add_item(add_info: Add_request) -> JSONResponse:
 @app.post("/parse")
 async def parse_database(parse_info: Parse_request) -> JSONResponse:
     log(f"Parse database request with remake = {parse_info.remake}")
-    parser.parse(parse_info.remake)
+    belaz_parser.parse(parse_info.remake)
     return json_resp({"msg": "Successfully parsing request!"})
 
 

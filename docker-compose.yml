@@ -1,0 +1,10 @@
+version: ''
+
+services:
+  web:
+    build: .
+    image: belaz_api_web
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
